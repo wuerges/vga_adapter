@@ -119,37 +119,12 @@ class VGA(width: Int) extends Module {
 
   val visible_horizontal = counter_line.io.count > UInt(240) && counter_line.io.count <= UInt(1040)
   val visible_vertical = counter_frame.io.count > UInt(66) && counter_frame.io.count <= UInt(666)
+  val visible = visible_horizontal && visible_vertical
   
-  when(visible_horizontal && visible_vertical) {
-    when(counter_frame.io.count <= UInt(166)) {
-      io.r := UInt(0xf, width)
-      io.g := UInt(0xf, width)
-      io.b := UInt(0xf, width)
-    }.elsewhen(counter_frame.io.count <= UInt(266)) {
-      io.r := UInt(0x0, width)
-      io.g := UInt(0xf, width)
-      io.b := UInt(0x0, width)
-    }.elsewhen(counter_frame.io.count <= UInt(366)) {
-      io.r := UInt(0x0, width)
-      io.g := UInt(0x0, width)
-      io.b := UInt(0xf, width)
-    }.elsewhen(counter_frame.io.count <= UInt(466)) {
-      io.r := UInt(0xf, width)
-      io.g := UInt(0x0, width)
-      io.b := UInt(0x0, width)
-    }.elsewhen(counter_frame.io.count <= UInt(566)) {
-      io.r := UInt(0x0, width)
-      io.g := UInt(0xf, width)
-      io.b := UInt(0x0, width)
-    }.elsewhen(counter_frame.io.count <= UInt(666)) {
-      io.r := UInt(0x0, width)
-      io.g := UInt(0x0, width)
-      io.b := UInt(0xf, width)
-    }.otherwise {
-      io.r := UInt(0x0, width)
-      io.g := UInt(0x0, width)
-      io.b := UInt(0x0, width)
-    }
+  when(visible) {
+    io.r := counter_line.io.count(3, 0)
+    io.g := counter_frame.io.count(3, 0) + counter_line.io.count(3, 0)   
+    io.b := counter_frame.io.count(3, 0)   
   }.otherwise {
     io.r := UInt(0x0, width)
     io.g := UInt(0x0, width)
