@@ -78,44 +78,84 @@ class VGA(width: Int) extends Module {
     io.v_sync := Bool(true)
 
   }
+  //
+  //  when(counter_line.io.count > UInt(300) && counter_line.io.count <= UInt(340)) {
+  //    io.r := UInt(0xf, width)
+  //    io.g := UInt(0x0, width)
+  //    io.b := UInt(0x0, width)
+  //  }.elsewhen(counter_line.io.count > UInt(340) && counter_line.io.count <= UInt(440)) {
+  //    io.r := UInt(0x0, width)
+  //    io.g := UInt(0xf, width)
+  //    io.b := UInt(0x0, width)
+  //  }.elsewhen(counter_line.io.count > UInt(440) && counter_line.io.count <= UInt(540)) {
+  //    io.r := UInt(0x0, width)
+  //    io.g := UInt(0x0, width)
+  //    io.b := UInt(0xf, width)
+  //  }.elsewhen(counter_line.io.count > UInt(540) && counter_line.io.count <= UInt(640)) {
+  //    io.r := UInt(0xf, width)
+  //    io.g := UInt(0x0, width)
+  //    io.b := UInt(0x0, width)
+  //  }.elsewhen(counter_line.io.count > UInt(640) && counter_line.io.count <= UInt(740)) {
+  //    io.r := UInt(0x0, width)
+  //    io.g := UInt(0xf, width)
+  //    io.b := UInt(0x0, width)
+  //  }.elsewhen(counter_line.io.count > UInt(740) && counter_line.io.count <= UInt(840)) {
+  //    io.r := UInt(0x0, width)
+  //    io.g := UInt(0x0, width)
+  //    io.b := UInt(0xf, width)
+  //  }.elsewhen(counter_line.io.count > UInt(840) && counter_line.io.count <= UInt(940)) {
+  //    io.r := UInt(0xf, width)
+  //    io.g := UInt(0x0, width)
+  //    io.b := UInt(0x0, width)
+  //  }.elsewhen(counter_line.io.count > UInt(940) && counter_line.io.count <= UInt(1000)) {
+  //    io.r := UInt(0x0, width)
+  //    io.g := UInt(0xf, width)
+  //    io.b := UInt(0x0, width)
+  //  }.otherwise {
+  //    io.r := UInt(0x0, width)
+  //    io.g := UInt(0x0, width)
+  //    io.b := UInt(0x0, width)
+  //  }
 
-  when(counter_line.io.count > UInt(300) && counter_line.io.count <= UInt(340)) {
-    io.r := UInt(0xf, width)
-    io.g := UInt(0x0, width)
-    io.b := UInt(0x0, width)
-  }.elsewhen(counter_line.io.count > UInt(340) && counter_line.io.count <= UInt(440)) {
-    io.r := UInt(0x0, width)
-    io.g := UInt(0xf, width)
-    io.b := UInt(0x0, width)
-  }.elsewhen(counter_line.io.count > UInt(440) && counter_line.io.count <= UInt(540)) {
-    io.r := UInt(0x0, width)
-    io.g := UInt(0x0, width)
-    io.b := UInt(0xf, width)
-  }.elsewhen(counter_line.io.count > UInt(540) && counter_line.io.count <= UInt(640)) {
-    io.r := UInt(0xf, width)
-    io.g := UInt(0x0, width)
-    io.b := UInt(0x0, width)
-  }.elsewhen(counter_line.io.count > UInt(640) && counter_line.io.count <= UInt(740)) {
-    io.r := UInt(0x0, width)
-    io.g := UInt(0xf, width)
-    io.b := UInt(0x0, width)
-  }.elsewhen(counter_line.io.count > UInt(740) && counter_line.io.count <= UInt(840)) {
-    io.r := UInt(0x0, width)
-    io.g := UInt(0x0, width)
-    io.b := UInt(0xf, width)
-  }.elsewhen(counter_line.io.count > UInt(840) && counter_line.io.count <= UInt(940)) {
-    io.r := UInt(0xf, width)
-    io.g := UInt(0x0, width)
-    io.b := UInt(0x0, width)
-  }.elsewhen(counter_line.io.count > UInt(940) && counter_line.io.count <= UInt(1000)) {
-    io.r := UInt(0x0, width)
-    io.g := UInt(0xf, width)
-    io.b := UInt(0x0, width)
+  val visible_horizontal = counter_line.io.count > UInt(240) && counter_line.io.count <= UInt(1040)
+  val visible_vertical = counter_frame.io.count > UInt(66) && counter_frame.io.count <= UInt(666)
+  
+  when(visible_horizontal && visible_vertical) {
+    when(counter_frame.io.count <= UInt(166)) {
+      io.r := UInt(0xf, width)
+      io.g := UInt(0xf, width)
+      io.b := UInt(0xf, width)
+    }.elsewhen(counter_frame.io.count <= UInt(266)) {
+      io.r := UInt(0x0, width)
+      io.g := UInt(0xf, width)
+      io.b := UInt(0x0, width)
+    }.elsewhen(counter_frame.io.count <= UInt(366)) {
+      io.r := UInt(0x0, width)
+      io.g := UInt(0x0, width)
+      io.b := UInt(0xf, width)
+    }.elsewhen(counter_frame.io.count <= UInt(466)) {
+      io.r := UInt(0xf, width)
+      io.g := UInt(0x0, width)
+      io.b := UInt(0x0, width)
+    }.elsewhen(counter_frame.io.count <= UInt(566)) {
+      io.r := UInt(0x0, width)
+      io.g := UInt(0xf, width)
+      io.b := UInt(0x0, width)
+    }.elsewhen(counter_frame.io.count <= UInt(666)) {
+      io.r := UInt(0x0, width)
+      io.g := UInt(0x0, width)
+      io.b := UInt(0xf, width)
+    }.otherwise {
+      io.r := UInt(0x0, width)
+      io.g := UInt(0x0, width)
+      io.b := UInt(0x0, width)
+    }
   }.otherwise {
     io.r := UInt(0x0, width)
     io.g := UInt(0x0, width)
     io.b := UInt(0x0, width)
   }
+
 }
 
 
