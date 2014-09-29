@@ -1,6 +1,10 @@
 package main.scala
 
 import Chisel._
+import java.awt.image.BufferedImage
+import java.io.IOException
+import javax.imageio.ImageIO;
+import java.io.File
 
 class Counter(n: Int) extends Module {
   val io = new Bundle {
@@ -78,53 +82,62 @@ class VGA(width: Int) extends Module {
     io.v_sync := Bool(true)
 
   }
-  //
-  //  when(counter_line.io.count > UInt(300) && counter_line.io.count <= UInt(340)) {
-  //    io.r := UInt(0xf, width)
-  //    io.g := UInt(0x0, width)
-  //    io.b := UInt(0x0, width)
-  //  }.elsewhen(counter_line.io.count > UInt(340) && counter_line.io.count <= UInt(440)) {
-  //    io.r := UInt(0x0, width)
-  //    io.g := UInt(0xf, width)
-  //    io.b := UInt(0x0, width)
-  //  }.elsewhen(counter_line.io.count > UInt(440) && counter_line.io.count <= UInt(540)) {
-  //    io.r := UInt(0x0, width)
-  //    io.g := UInt(0x0, width)
-  //    io.b := UInt(0xf, width)
-  //  }.elsewhen(counter_line.io.count > UInt(540) && counter_line.io.count <= UInt(640)) {
-  //    io.r := UInt(0xf, width)
-  //    io.g := UInt(0x0, width)
-  //    io.b := UInt(0x0, width)
-  //  }.elsewhen(counter_line.io.count > UInt(640) && counter_line.io.count <= UInt(740)) {
-  //    io.r := UInt(0x0, width)
-  //    io.g := UInt(0xf, width)
-  //    io.b := UInt(0x0, width)
-  //  }.elsewhen(counter_line.io.count > UInt(740) && counter_line.io.count <= UInt(840)) {
-  //    io.r := UInt(0x0, width)
-  //    io.g := UInt(0x0, width)
-  //    io.b := UInt(0xf, width)
-  //  }.elsewhen(counter_line.io.count > UInt(840) && counter_line.io.count <= UInt(940)) {
-  //    io.r := UInt(0xf, width)
-  //    io.g := UInt(0x0, width)
-  //    io.b := UInt(0x0, width)
-  //  }.elsewhen(counter_line.io.count > UInt(940) && counter_line.io.count <= UInt(1000)) {
-  //    io.r := UInt(0x0, width)
-  //    io.g := UInt(0xf, width)
-  //    io.b := UInt(0x0, width)
-  //  }.otherwise {
-  //    io.r := UInt(0x0, width)
-  //    io.g := UInt(0x0, width)
-  //    io.b := UInt(0x0, width)
-  //  }
 
   val visible_horizontal = counter_line.io.count > UInt(240) && counter_line.io.count <= UInt(1040)
   val visible_vertical = counter_frame.io.count > UInt(66) && counter_frame.io.count <= UInt(666)
   val visible = visible_horizontal && visible_vertical
-  
+
+  def X: UInt = {
+    counter_line.io.count - UInt(240)
+  }
+  def Y: UInt = {
+    counter_frame.io.count - UInt(240)
+  }
+  def Pos: UInt = {
+    Y * UInt(800) + X
+  }
+
+//  val image = ImageIO.read(new File("src/main/resources/image.jpg"));
+//  val w = image.getWidth()
+//  val h = image.getHeight()
+
+  val memory = Mem(UInt(width = 24), 800 * 600, false)
+//  for (i <- 0 until w) {
+//    for (j <- 0 until h) {
+//      val pixel = image.getRGB(i, j) & 0xffffff;
+//      memory(UInt(i*w+j)) := UInt(pixel)
+//      println(i*w+j)
+//      
+//      //        alpha = (pixel >> 24) & 0xff;
+////      val red = (pixel >> 16) & 0xff;
+////      val green = (pixel >> 8) & 0xff;
+////      val blue = (pixel) & 0xff;
+//    }
+//  }
+
+  val read = Reg(UInt(0, width))
+  read := memory(Pos)
   when(visible) {
-    io.r := counter_line.io.count(3, 0)
-    io.g := counter_frame.io.count(3, 0) + counter_line.io.count(3, 0)   
-    io.b := counter_frame.io.count(3, 0)   
+    io.r := read(3, 0) 
+    io.g := read(7, 4) 
+    io.b := read(11, 8) 
+//    for (i <- 0 until w) {
+//      for (j <- 0 until h) {
+//
+//        when(X === UInt(i) && Y === UInt(j)) {
+//          io.r := UInt(red, width)
+//          io.g := UInt(green, width)
+//          io.b := UInt(blue, width)
+//
+//        }
+//      }
+//    }
+
+    //    val cl_max = log2Up(1040)
+    //    val cf_max = log2Up(666)
+    //    io.r := counter_line.io.count(cl_max - 1, cl_max - 4)
+    //    io.g := counter_frame.io.count(cf_max - 1, cf_max - 4) + counter_line.io.count(cl_max - 1, cl_max - 4)
+    //    io.b := counter_frame.io.count(cf_max - 1, cf_max - 4)
   }.otherwise {
     io.r := UInt(0x0, width)
     io.g := UInt(0x0, width)
