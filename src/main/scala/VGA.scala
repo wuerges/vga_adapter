@@ -93,51 +93,33 @@ class VGA(width: Int) extends Module {
   def Y: UInt = {
     counter_frame.io.count - UInt(240)
   }
-  def Pos: UInt = {
-    Y * UInt(800) + X
+
+  val image = ImageIO.read(new File("src/main/resources/skull.gif"));
+  val w = image.getWidth()
+  val h = image.getHeight()
+
+  val memory = Mem(UInt(width = 12), w * h, false)
+  for (i <- 0 until w) {
+    for (j <- 0 until h) {
+      val pixel = image.getRGB(i, j) & 0xffffff;
+      memory(UInt(i*w+j)) := UInt(pixel)
+      val red = (pixel >> (16 + 4)) & 0xf;
+      val green = (pixel >> (8 + 4)) & 0xf;
+      val blue = (pixel >> 4) & 0xf;
+      
+      val stored = (red  << 8) | (green << 4) | blue;
+      
+      memory(UInt(i*w+j)) := UInt(stored)
+    }
   }
 
-//  val image = ImageIO.read(new File("src/main/resources/image.jpg"));
-//  val w = image.getWidth()
-//  val h = image.getHeight()
-
-  val memory = Mem(UInt(width = 24), 800 * 600, false)
-//  for (i <- 0 until w) {
-//    for (j <- 0 until h) {
-//      val pixel = image.getRGB(i, j) & 0xffffff;
-//      memory(UInt(i*w+j)) := UInt(pixel)
-//      println(i*w+j)
-//      
-//      //        alpha = (pixel >> 24) & 0xff;
-////      val red = (pixel >> 16) & 0xff;
-////      val green = (pixel >> 8) & 0xff;
-////      val blue = (pixel) & 0xff;
-//    }
-//  }
-
   val read = Reg(UInt(0, width))
-  read := memory(Pos)
+  
+  read := memory(((X % UInt(32)) * UInt(w)) | (Y % UInt(32)))
   when(visible) {
     io.r := read(3, 0) 
     io.g := read(7, 4) 
     io.b := read(11, 8) 
-//    for (i <- 0 until w) {
-//      for (j <- 0 until h) {
-//
-//        when(X === UInt(i) && Y === UInt(j)) {
-//          io.r := UInt(red, width)
-//          io.g := UInt(green, width)
-//          io.b := UInt(blue, width)
-//
-//        }
-//      }
-//    }
-
-    //    val cl_max = log2Up(1040)
-    //    val cf_max = log2Up(666)
-    //    io.r := counter_line.io.count(cl_max - 1, cl_max - 4)
-    //    io.g := counter_frame.io.count(cf_max - 1, cf_max - 4) + counter_line.io.count(cl_max - 1, cl_max - 4)
-    //    io.b := counter_frame.io.count(cf_max - 1, cf_max - 4)
   }.otherwise {
     io.r := UInt(0x0, width)
     io.g := UInt(0x0, width)
